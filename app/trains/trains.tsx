@@ -1,70 +1,239 @@
-import { animate, createScope, Scope } from "animejs";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
+import anime from "animejs";
 
-const LineA = () => {
-  return (
-    <svg
-      width="955"
-      height="777"
-      viewBox="0 0 955 777"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M0.5 0V55.5L12 72L56.5 116.5V491L69 504.5H135.5L140.5 512V651L154.5 664.5H359.5L364 669.5V768L372 776.5H407.5L415.5 773L477 711.5L484.5 707.5H528L536.5 702.5L677.5 561.5L686.5 557H720L728.5 553L795.5 486M835 446.5L795.5 486M795.5 486C795.5 486 806 484.5 811 489.5C816 494.5 926.5 605 936 614.5C945.5 624 954.5 614.5 954.5 611.5C954.5 608.5 954.5 504.5 954.5 504.5"
-        stroke="black"
-      />
-    </svg>
-  );
-};
+const TRAIN_PATH = "train-path";
+const TRAIN_STATION = "train-station";
+const TRAIN_STATION_LABEL = "train-station-label";
+const TRAIN = "train";
 
-export function Trains() {
-  const root = useRef<HTMLDivElement>(null);
-  const scope = useRef<Scope | null>(null);
-  const [rotations, setRotations] = useState(0);
+class Station {
+  constructor(
+    public id: string,
+    public name: string[],
+    public x: number,
+    public y: number,
+    public curve?: boolean,
+    public curveDirection?: "up" | "down"
+  ) {
+    this.id = id;
+    this.name = name;
+    this.x = x;
+    this.y = y;
+    this.curve = curve ?? false;
+    this.curveDirection = curveDirection;
+  }
+  private drawLabel() {
+    return (
+      <text
+        className={TRAIN_STATION_LABEL}
+        textAnchor="middle"
+        fontSize="10"
+        fill="#333"
+      >
+        {this.name.map((line, idx) => (
+          <tspan key={idx} x={this.x + idx * 5} y={this.y + 20 + idx * 12}>
+            {line}
+          </tspan>
+        ))}
+      </text>
+    );
+  }
 
-  useEffect(() => {
-    if (!root.current) {
-      return;
+  drawStationWithLabel() {
+    return (
+      <g style={{ cursor: "pointer" }}>
+        <circle
+          cx={this.x}
+          cy={this.y}
+          r="6"
+          fill="#fff"
+          stroke="#000"
+          strokeWidth="2"
+          className={TRAIN_STATION}
+        />
+        <text
+          className={TRAIN_STATION_LABEL}
+          textAnchor="middle"
+          fontSize="10"
+          fill="#333"
+        >
+          {this.drawLabel()}
+        </text>
+      </g>
+    );
+  }
+}
+
+class TrainPath {
+  public segments: string[];
+
+  constructor(public stations: Station[]) {
+    this.segments = [];
+    this.stations = stations;
+    this.generatePathSegments(stations);
+  }
+
+  // Automatically calculate the control point for Bézier curves with curve direction
+  private calculateControlPoint(
+    curr: Station,
+    next: Station,
+    direction: "up" | "down" = "up"
+  ) {
+    // Midpoint between two stations
+    const midpointX = (curr.x + next.x) / 2;
+    const midpointY = (curr.y + next.y) / 2;
+
+    // Calculate the distance between current and next station to scale the offset
+    const distance = Math.sqrt(
+      Math.pow(next.x - curr.x, 2) + Math.pow(next.y - curr.y, 2)
+    );
+
+    // Use a small offset based on the distance between the stations
+    const offset = distance * 0.1; // Adjust this value to control the curve sharpness
+
+    // Control curve direction
+    let controlPoint = { x: midpointX, y: midpointY };
+
+    if (direction === "up") {
+      controlPoint.y -= offset; // Curve upward
+    } else if (direction === "down") {
+      controlPoint.y += offset; // Curve downward
     }
 
-    scope.current = createScope({ root: root.current }).add((scope) => {
-      var pathEls = document.querySelectorAll("path");
-      for (var i = 0; i < pathEls.length; i++) {
-        var pathEl = pathEls[i];
-        animate(pathEl, {
-          duration: 3000,
-          delay: 2000,
-          loop: true,
-          direction: "alternate",
-          easing: "easeInOutSine",
-          autoplay: true,
-        });
-      }
-    });
+    return controlPoint;
+  }
 
-    return () => scope.current?.revert();
+  // Function to generate path with curves
+  generatePathSegments(stations: Station[]) {
+    const segments = [];
+
+    for (let i = 0; i < stations.length - 1; i++) {
+      const curr = stations[i];
+      const next = stations[i + 1];
+
+      if (next.curve) {
+        // Automatically calculate the control point for quadratic Bézier curve with curve direction
+        const controlPoint = this.calculateControlPoint(
+          curr,
+          next,
+          next.curveDirection || "up"
+        );
+
+        // Quadratic Bézier curve (1 control point)
+        segments.push(
+          `Q ${controlPoint.x} ${controlPoint.y}, ${next.x} ${next.y}`
+        );
+      } else {
+        // Linear path
+        segments.push(`L ${next.x} ${next.y}`);
+      }
+    }
+
+    // Start with M (move to) the first station
+    return `M ${stations[0].x} ${stations[0].y} ` + segments.join(" ");
+  }
+
+  drawPath() {
+    return (
+      <path
+        d={this.generatePathSegments(this.stations)}
+        stroke="#000"
+        strokeWidth="4"
+        fill="none"
+        className={TRAIN_PATH}
+      />
+    );
+  }
+}
+
+class Train {
+  constructor(public id: string) {
+    this.id = id;
+  }
+
+  animateTrain(currentStation: number, direction: number, stations: Station[]) {
+    const nextStation = currentStation + direction;
+    const fromX = stations[currentStation].x;
+    const toX = stations[nextStation].x;
+    const fromY = stations[currentStation].y;
+    const toY = stations[nextStation].y;
+
+    anime({
+      targets: `.${TRAIN}`,
+      translateX: [fromX, toX],
+      translateY: [fromY, toY],
+      easing: "easeInOutQuad",
+      duration: 1000,
+      complete: () => {
+        currentStation = nextStation;
+        // // Reverse direction if at the beginning or end of the stations
+        if (currentStation === 0 || currentStation === stations.length - 1) {
+          direction *= -1;
+        }
+        // Pause at each station
+        setTimeout(
+          () => this.animateTrain(currentStation, direction, stations),
+          500
+        );
+      },
+    });
+  }
+
+  draw() {
+    return <circle r="10" fill="red" className={TRAIN} />;
+  }
+}
+
+export function MtaTrains() {
+  const stationsConfig = [
+    { name: ["1st Ave"], x: 50, y: 50 },
+    { name: ["2nd Ave"], x: 105, y: 100 },
+    { name: ["3rd St"], x: 160, y: 150 },
+    {
+      name: ["Union", "Square"],
+      x: 215,
+      y: 180,
+      curve: true,
+      curveDirection: "down",
+    },
+    { name: ["5th Ave"], x: 270, y: 200 },
+    { name: ["6th Ave"], x: 325, y: 200 },
+    { name: ["7th Ave"], x: 380, y: 200 },
+    { name: ["8th Ave"], x: 435, y: 200 },
+    { name: ["9th Ave"], x: 490, y: 200 },
+    { name: ["10th Ave"], x: 545, y: 250 },
+  ];
+
+  const stations = stationsConfig.map(
+    (station) =>
+      new Station(
+        station.name.join(" "),
+        station.name,
+        station.x,
+        station.y,
+        station.curve,
+        station.curveDirection ?? undefined
+      )
+  );
+  const trainPath = new TrainPath(stations);
+  const train = new Train("A");
+
+  useEffect(() => {
+    train.animateTrain(0, 1, stations);
   }, []);
 
   return (
-    <div ref={root} style={{ width: "100vw", height: "100vh" }}>
-      <div
-        style={{
-          width: "1050px",
-          height: "1223px",
-        }}
+    <div className="w-full flex flex-col items-center mt-10">
+      <svg
+        viewBox="0 0 600 120"
+        xmlns="http://www.w3.org/2000/svg"
+        width="100vw"
+        height="100vh"
       >
-        <LineA />
-        {/* <image
-          className="block stroke-1 stroke-blue-700"
-          href="/lines/a.svg"
-          style={{
-            width: "954px",
-            height: "776.5px",
-          }}
-        />
-        <image href="/areas/staten_island.svg" height="100%" width="100%" /> */}
-      </div>
+        {trainPath.drawPath()}
+        {train.draw()}
+        {stations.map((station: Station) => station.drawStationWithLabel())}
+      </svg>
     </div>
   );
 }
