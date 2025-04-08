@@ -20,14 +20,8 @@ class Train {
 
   animateTrain(currentStation: number, direction: number) {
     let nextStation = currentStation + direction;
-    console.log(
-      ReactDOMServer.renderToStaticMarkup(
-        this.path.getPathSegment(currentStation, nextStation)
-      )
-    );
-    const path = anime.path(
-      this.path.getPathSegment(currentStation, nextStation)
-    );
+    const path = anime.path(this.path.segmentPath(currentStation, nextStation));
+    console.log({ currentStation, direction, nextStation, path });
     anime({
       targets: `#train-${this.id}.${TRAIN_CLASSNAME}`,
       translateX: path("x"),
@@ -37,7 +31,7 @@ class Train {
       duration: 1000,
       complete: () => {
         currentStation = nextStation;
-        // // Reverse direction if at the beginning or end of the stations
+        // Reverse direction if at the beginning or end of the stations
         if (
           currentStation === 0 ||
           currentStation === this.path.stations.length - 1

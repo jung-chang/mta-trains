@@ -6,6 +6,7 @@ export interface IStation {
   x: number;
   y: number;
   handicap?: boolean;
+  lengthFromStart?: number;
 }
 
 class Station {
