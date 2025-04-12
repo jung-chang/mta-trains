@@ -33,31 +33,89 @@ import {
   trainColor as trainColorC,
   stationColor as stationColorC,
 } from "./maps/nyc/paths/c";
+import {
+  SvgPath as Path7,
+  stations as stations7,
+  pathColor as pathColor7,
+  trainColor as trainColor7,
+  stationColor as stationColor7,
+} from "./maps/nyc/paths/7";
+import {
+  SvgPath as PathL,
+  stations as stationsL,
+  pathColor as pathColorL,
+  trainColor as trainColorL,
+  stationColor as stationColorL,
+} from "./maps/nyc/paths/l";
+import {
+  SvgPath as Path1,
+  stations as stations1,
+  pathColor as pathColor1,
+  trainColor as trainColor1,
+  stationColor as stationColor1,
+} from "./maps/nyc/paths/1";
+import {
+  SvgPath as PathJ,
+  stations as stationsJ,
+  pathColor as pathColorJ,
+  trainColor as trainColorJ,
+  stationColor as stationColorJ,
+} from "./maps/nyc/paths/j";
 
 export function MtaTrains() {
-  const trainPath4 = new TrainPath(Path4(), stations4, {
+  const trainPath4 = new TrainPath("4", Path4(), stations4, {
     stationColor: stationColor4,
     pathColor: pathColor4,
   });
-  const trainPathSIR = new TrainPath(PathSIR(), stationsSIR, {
+  const trainPathSIR = new TrainPath("", PathSIR(), stationsSIR, {
     stationColor: stationColorSIR,
     pathColor: pathColorSIR,
   });
-  const trainPathA = new TrainPath(PathA(), stationsA, {
+  const trainPathA = new TrainPath("A", PathA(), stationsA, {
     stationColor: stationColorA,
     pathColor: pathColorA,
   });
-  const trainPathC = new TrainPath(PathC(), stationsC, {
+  const trainPathC = new TrainPath("C", PathC(), stationsC, {
     stationColor: stationColorC,
     pathColor: pathColorC,
   });
-  const trainPaths = [trainPath4, trainPathSIR, trainPathA, trainPathC];
+  const trainPath7 = new TrainPath("7", Path7(), stations7, {
+    stationColor: stationColor7,
+    pathColor: pathColor7,
+  });
+  const trainPathL = new TrainPath("L", PathL(), stationsL, {
+    stationColor: stationColorL,
+    pathColor: pathColorL,
+  });
+  const trainPath1 = new TrainPath("1", Path1(), stations1, {
+    stationColor: stationColor1,
+    pathColor: pathColor1,
+  });
+  const trainPathJ = new TrainPath("J", PathJ(), stationsJ, {
+    stationColor: stationColorJ,
+    pathColor: pathColorJ,
+  });
+
+  const trainPaths = [
+    trainPath4,
+    trainPathSIR,
+    trainPathA,
+    trainPathC,
+    trainPath7,
+    trainPathL,
+    trainPath1,
+    trainPathJ,
+  ];
 
   const trains = [
     new Train("SIR", trainPathSIR, { color: trainColorSIR }),
     new Train("4", trainPath4, { color: trainColor4 }),
     new Train("A", trainPathA, { color: trainColorA }),
     new Train("C", trainPathC, { color: trainColorC }),
+    new Train("7", trainPath7, { color: trainColor7 }),
+    new Train("L", trainPathL, { color: trainColorL }),
+    new Train("1", trainPath1, { color: trainColor1 }),
+    new Train("J", trainPathJ, { color: trainColorJ }),
   ];
 
   useEffect(() => {

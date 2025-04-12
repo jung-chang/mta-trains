@@ -13,10 +13,12 @@ class TrainPath {
   private stationsData: IStation[] = [];
 
   constructor(
+    public name: string,
     public svgPath: SVGElement,
     stations: IStation[],
     styles?: ITrainPathStyles
   ) {
+    this.name = name;
     this.svgPath = svgPath;
     this.stationsData = stations;
     this.stations = stations.map(
@@ -24,6 +26,7 @@ class TrainPath {
         new Station(
           station.name,
           station.name,
+          this.name,
           station.x,
           station.y,
           station.handicap ?? false,

@@ -1,6 +1,5 @@
 import anime from "animejs";
 import type TrainPath from "./train-path";
-import ReactDOMServer from "react-dom/server";
 
 export const TRAIN_CLASSNAME = "train";
 export interface ITrainStyles {

@@ -13,6 +13,7 @@ class Station {
   constructor(
     public id: string,
     public name: string,
+    public trainPathName: string,
     public x: number,
     public y: number,
     public handicap: boolean = false,
@@ -36,6 +37,15 @@ class Station {
           fill={this.color}
           className={TRAIN_STATION_CLASSNAME}
         />
+        <text
+          x={this.x}
+          y={this.y + 1}
+          textAnchor="middle"
+          fontSize="3"
+          fill="white"
+        >
+          {this.trainPathName}
+        </text>
         {showLabel && (
           <g>
             <text
