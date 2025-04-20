@@ -10,7 +10,7 @@ class Train {
   constructor(
     public id: string,
     public path: TrainPath,
-    public styles: ITrainStyles
+    public styles?: ITrainStyles
   ) {
     this.id = id;
     this.path = path;
