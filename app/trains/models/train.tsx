@@ -52,7 +52,7 @@ class Train {
         x={startingStation.x}
         y={startingStation.y}
       >
-        <circle r="5" fill={this.styles.color} />
+        <circle r="5" fill={this.styles?.color} />
         <text textAnchor="middle" dy=".3em" fill="white" fontSize="5">
           {this.id}
         </text>

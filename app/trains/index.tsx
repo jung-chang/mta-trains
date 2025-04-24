@@ -1,11 +1,10 @@
 import React, { useEffect } from "react";
-import TrainPath from "./models/train-path";
-import Train from "./models/train";
-import Manhattan from "./maps/nyc/areas/manhattan";
-import StatenIsland from "./maps/nyc/areas/staten-island";
 import Bronx from "./maps/nyc/areas/bronx";
+import Manhattan from "./maps/nyc/areas/manhattan";
 import QueensBrooklyn from "./maps/nyc/areas/queens-brooklyn";
-import { trainPaths } from "./maps/nyc/paths/train_paths";
+import StatenIsland from "./maps/nyc/areas/staten-island";
+import trainPaths from "./maps/nyc/paths/train-paths";
+import Train from "./models/train";
 
 export function MtaTrains() {
   const trains = Object.keys(trainPaths).map((key) => {
